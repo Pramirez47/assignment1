@@ -1,0 +1,36 @@
+
+ADDI X19, X19, #0
+PRNT X19    //print register
+//transfer control to procedure, get base address of array
+LDUR X0, [X19, #0]
+PRNT X0     //print register 
+//place n into a register 
+ADDI X1, X1, #8
+PRNT X1     //print register
+BL fill    //this also stores LR!
+HALT
+// DUMP 
+//fill array
+fill: 
+    SUBI SP, SP, #8
+    //i varialbe = 0
+    ADDI X9, X9, #0
+    // PRNT X9
+    //start of loop
+    forLoop: 
+        SUBS X4, X9, X1  // i - n
+        B.GE exitLoop        //check n and c flag (basically if answer went negative)
+        //n - i
+        SUB X1, X1, X9
+        //(n - i) - 1
+        SUBI X1, X1, #1
+        // Calculate the address for a[i]
+        STUR X1, [X0, #0]  // Store (n - i - 1) into a[i]
+        //add onne
+        ADDI X9, X9, #1
+        B forLoop
+    //end of loop
+    exitLoop:    
+    PRNT X0
+    BR LR 
+    
