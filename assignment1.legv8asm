@@ -1,36 +1,86 @@
+main:
+        ADDI X19, XZR, #0  // Sets our array to memory address
+        PRNT X19    //print register
+        //transfer control to procedure, get base address of array
+        LDUR X0, [X19, #0]
+        PRNT X0     //print register
+        ADDI X1, XZR, #16 //set n = 8
+        PRNT X1     //print register
+        BL fill    //this also stores LR!
+        BL print //prints
+        HALT
+        // DUMP
 
-ADDI X19, X19, #0
-PRNT X19    //print register
-//transfer control to procedure, get base address of array
-LDUR X0, [X19, #0]
-PRNT X0     //print register 
-//place n into a register 
-ADDI X1, X1, #8
-PRNT X1     //print register
-BL fill    //this also stores LR!
-HALT
-// DUMP 
-//fill array
-fill: 
-    SUBI SP, SP, #8
-    //i varialbe = 0
-    ADDI X9, X9, #0
+
+//Fill function
+fill:
+    SUBI SP, SP, #8 //Clears Stack Data
+
+    ADDI X9, XZR, #0  //int i = 0
     // PRNT X9
     //start of loop
-    forLoop: 
-        SUBS X4, X9, X1  // i - n
-        B.GE exitLoop        //check n and c flag (basically if answer went negative)
-        //n - i
-        SUB X1, X1, X9
-        //(n - i) - 1
-        SUBI X1, X1, #1
-        // Calculate the address for a[i]
-        STUR X1, [X0, #0]  // Store (n - i - 1) into a[i]
-        //add onne
-        ADDI X9, X9, #1
-        B forLoop
+    forLoop:
+        SUBS XZR, X9, X1  // i - n
+        B.GE exitLoop  //check n and c flag (basically if answer went negative)
+        SUB X12, X1, X9         // X12 = n - i
+        SUBI X12, X12, #1       // X12 = (n - 1) - i (value to store)        
+        LSL X10, X9, #3  //calculate offset
+        ADD X11, X19, X10 //base plus offset with x19
+        STUR X12, [X11, #0] 
+        ADDI X9, X9, #1 //i++
+        B forLoop //loop
     //end of loop
-    exitLoop:    
-    PRNT X0
-    BR LR 
+
+
+//print function that goes by the register to print the functions, optional function not needed to be graded.
+print:
+    ADDI X9, XZR, #0         // Reset i = 0
+
+    // Start of array print loop
+    printLoop:
+        SUBS XZR, X9, X1     // Check if i < n
+        B.GE endPrint        // Exit if i >= n
+
+        LSL X10, X9, #3      // Shift i by 2 (i * 4) to get address
+        ADD X11, X19, X10     // Calculate a[i]'s address
+        LDUR X13, [X11, #0]  // Load the value from memory
+        
+        PRNT X13            // Print a[i]
+        ADDI X9, X9, #1      // i++
+        B printLoop          // Repeat loop
+
+    endPrint:
+        BR LR                // Return to main
+
+// //clear out a register for swap, figure out what to do for a switch between two arrays, you need int i, and int j. What are the values of int i and j? We dont know what these values are, so for now lets just organize them into temporary registers.
+// swap:
+//     ADDI X5, XZR, #0 //Clear register for temp
+//     //Load value of i (assume i is in X9)
+//     //Load value of j (assume j is in X10)
     
+//     //Caluclate a[i] address
+//     LSL X1, X9, #3  //X9 is offseted to x1
+//     ADD X2, X19, X1    //Offset + X19
+
+//     //Calculate a[j] address
+//     LSL X3, X10, #3 //Calcluate Offset
+//     ADD X4, X19, X3 //Calculate Add
+
+//     LDUR X5, [X2, #0] //a[i] into temp
+//     LDUR X2, [X4, #0] //a[j] into a[i] 
+//     LDUR X5, [X5, #0] //Temp in a[j]
+//     BR LR //Exit swap
+
+// //This seems like a loop we need to figure out what it is, we will be using the established things we already have the X19, the address of the array, we also have 
+// next_i:
+
+// //Similar to next_i branch
+// next_j:
+
+// partition:
+
+// quicksort:
+
+exitLoop:
+    PRNT X0
+    BR LR
