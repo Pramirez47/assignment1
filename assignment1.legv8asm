@@ -45,3 +45,18 @@ fill:
     // End of loop
     exitLoop:    
     BR LR                // Return from the function
+
+swap:
+    //assume base address, i and j are in register X0, X1, X2 
+
+    // Calculate the address for a[i] (a + i * 8)
+    LSL X10, X1, #3   // X12 = i * 8 (shift left i by 3)
+    ADD X11, X0, X10   // X11 = base address + i * 8 (this is the address of a[i])
+    LDUR X12, [X11, #0] //load a[i] into a regsiter
+    ORR X9, XZR, X12 // temp = a[i]
+        
+    LSL X13, X2, #3   // X13 = j * 8 (shift left i by 3)
+    ADD X14, X0, X13   // X14 = base address + j * 8 (this is the address of a[j])
+    LDUR X15, [X14, #0] //load a[j] into a regsiter
+    STUR X15, [X11, #0]  // a[i] = a[j]
+    STUR X9, [X14, #0]  // a[j] = tmp;
