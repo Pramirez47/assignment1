@@ -1,36 +1,52 @@
-
+// Store the base address of the array in X19
 ADDI X19, X19, #0
-PRNT X19    //print register
-//transfer control to procedure, get base address of array
-LDUR X0, [X19, #0]
-PRNT X0     //print register 
-//place n into a register 
-ADDI X1, X1, #8
-PRNT X1     //print register
-BL fill    //this also stores LR!
-HALT
-// DUMP 
-//fill array
+PRNT X19    // Print register to debug
+
+// Transfer control to procedure, get the base address of the array
+LDUR X0, [X19, #0]  // Load the base address of the array into X0
+PRNT X0     // Print register
+
+// Place n into a register
+ADDI X1, XZR, #8   //n = 8 (this will be used for testing)
+PRNT X1     // Print register
+
+BL fill     // Transfer control to 'fill' function
+HALT        // End program
+
+// Fill array function
 fill: 
-    SUBI SP, SP, #8
-    //i varialbe = 0
-    ADDI X9, X9, #0
-    // PRNT X9
-    //start of loop
+    SUBI SP, SP, #8    // Allocate stack space if needed
+
+    // i variable = 0
+    ADDI X9, XZR, #0   // Set i to 0 (X9 will be our loop index)
+
+    // // Save n (X1) in X20 because we will modify X1
+    // ADDI X20, X1, #0    // X19 = n (saving n in X19 for later use)
+
+    // Start of loop
     forLoop: 
-        SUBS X4, X9, X1  // i - n
-        B.GE exitLoop        //check n and c flag (basically if answer went negative)
-        //n - i
-        SUB X1, X1, X9
-        //(n - i) - 1
-        SUBI X1, X1, #1
-        // Calculate the address for a[i]
-        STUR X1, [X0, #0]  // Store (n - i - 1) into a[i]
-        //add onne
-        ADDI X9, X9, #1
-        B forLoop
-    //end of loop
+        //make X2 equal to x19
+        SUBS X10, X9, X1 // Compare i (X9) with n (X1) by calculating i - n
+        B.GE exitLoop    // If i >= n, exit the loop
+        
+        // Calculate n - i - 1
+        SUB X11, X1, X9   // X11 = n - i
+        SUBI X11, X11, #1  // X11 = (n - i) - 1
+
+        // Calculate the address for a[i] (a + i * 8)
+        LSL X12, X9, #3   // X12 = i * 8 (shift left i by 3)
+        ADD X13, X0, X12   // X13 = base address + i * 8 (this is the address of a[i])
+
+        // Store (n - i - 1) into a[i]
+        STUR X11, [X13, #0]  // Store X4 (n - i - 1) into a[i]
+
+        // Increment i
+        ADDI X9, X9, #1   // i++
+
+        B forLoop         // Jump back to the start of the loop
+
+    // End of loop
     exitLoop:    
-    PRNT X0
-    BR LR 
-    
+    PRNT X0              // Print the base address of the array for debugging
+
+    BR LR                // Return from the function
