@@ -1,14 +1,11 @@
 // Store the base address of the array in X19
-ADDI X19, X19, #0
-PRNT X19    // Print register to debug
-
+ADDI X19, XZR, #8
 // Transfer control to procedure, get the base address of the array
 LDUR X0, [X19, #0]  // Load the base address of the array into X0
 PRNT X0     // Print register
 
 // Place n into a register
-ADDI X1, XZR, #8   //n = 8 (this will be used for testing)
-PRNT X1     // Print register
+ADDI X1, XZR, #16   //n = 8 (this will be used for testing)
 
 BL fill     // Transfer control to 'fill' function
 HALT        // End program
@@ -47,6 +44,4 @@ fill:
 
     // End of loop
     exitLoop:    
-    PRNT X0              // Print the base address of the array for debugging
-
     BR LR                // Return from the function
