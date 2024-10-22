@@ -1,62 +1,98 @@
 // Store the base address of the array in X19
-ADDI X19, XZR, #8
-// Transfer control to procedure, get the base address of the array
-LDUR X0, [X19, #0]  // Load the base address of the array into X0
-PRNT X0     // Print register
+ADDI X19, XZR, #8         // Assume array starts at address 8
+LDUR X0, [X19, #0]        // Load the base address of the array into X0
 
-// Place n into a register
-ADDI X1, XZR, #16   //n = 8 (this will be used for testing)
+// Place n into a register (n = 8 for testing)
+ADDI X20, XZR, #8          // n = 8
 
-BL fill     // Transfer control to 'fill' function
-HALT        // End program
+// Call 'fill' to fill the array
+BL fill                   // Transfer control to 'fill' function
+
+// Print the array after 'fill' to check if values are correct
+BL printArray              // Call a procedure to print the array
+
+// Set i and j for swapping
+ADDI X1, XZR, #3         // i = 2 (3rd element) //2nd element
+ADDI X2, XZR, #4         // j = 5 (6th element) //last eleement
+
+// Call 'swap' to swap a[i] and a[j]
+BL swap                   // Transfer control to 'swap' function
+
+// Print the array again after swapping
+BL printArray              // Call procedure to print the array after swap
+
+HALT                      // End the program
 
 // Fill array function
 fill: 
-    SUBI SP, SP, #8    // Allocate stack space if needed
+    SUBI SP, SP, #8        // Allocate stack space if needed
 
     // i variable = 0
-    ADDI X9, XZR, #0   // Set i to 0 (X9 will be our loop index)
-
-    // // Save n (X1) in X20 because we will modify X1
-    // ADDI X20, X1, #0    // X19 = n (saving n in X19 for later use)
+    ADDI X9, XZR, #0       // Set i to 0 (X9 will be our loop index)
 
     // Start of loop
     forLoop: 
-        //make X2 equal to x19
-        SUBS X10, X9, X1 // Compare i (X9) with n (X1) by calculating i - n
-        B.GE exitLoop    // If i >= n, exit the loop
-        
+        SUBS X10, X9, X20   // Compare i (X9) with n (X1) by calculating i - n
+        B.GE exitLoop      // If i >= n, exit the loop
+
         // Calculate n - i - 1
-        SUB X11, X1, X9   // X11 = n - i
+        SUB X11, X20, X9    // X11 = n - i
         SUBI X11, X11, #1  // X11 = (n - i) - 1
 
         // Calculate the address for a[i] (a + i * 8)
-        LSL X12, X9, #3   // X12 = i * 8 (shift left i by 3)
+        LSL X12, X9, #3    // X12 = i * 8 (shift left i by 3)
         ADD X13, X0, X12   // X13 = base address + i * 8 (this is the address of a[i])
 
         // Store (n - i - 1) into a[i]
-        STUR X11, [X13, #0]  // Store X4 (n - i - 1) into a[i]
+        STUR X11, [X13, #0]  // Store X11 (n - i - 1) into a[i]
 
         // Increment i
-        ADDI X9, X9, #1   // i++
+        ADDI X9, X9, #1    // i++
 
-        B forLoop         // Jump back to the start of the loop
+        B forLoop          // Jump back to the start of the loop
 
     // End of loop
     exitLoop:    
-    BR LR                // Return from the function
+    BR LR                  // Return from the function
 
+// Swap function
 swap:
-    //assume base address, i and j are in register X0, X1, X2 
-
     // Calculate the address for a[i] (a + i * 8)
-    LSL X10, X1, #3   // X12 = i * 8 (shift left i by 3)
-    ADD X11, X0, X10   // X11 = base address + i * 8 (this is the address of a[i])
-    LDUR X12, [X11, #0] //load a[i] into a regsiter
-    ORR X9, XZR, X12 // temp = a[i]
+    LSL X10, X1, #3        // X10 = i * 8 (shift left i by 3)
+    ADD X11, X0, X10       // X11 = base address + i * 8 (this is the address of a[i])
+    LDUR X12, [X11, #0]    // Load a[i] into a register
+    ORR X9, XZR, X12       // Store a[i] in X9 (temp)
         
-    LSL X13, X2, #3   // X13 = j * 8 (shift left i by 3)
-    ADD X14, X0, X13   // X14 = base address + j * 8 (this is the address of a[j])
-    LDUR X15, [X14, #0] //load a[j] into a regsiter
-    STUR X15, [X11, #0]  // a[i] = a[j]
-    STUR X9, [X14, #0]  // a[j] = tmp;
+    // Calculate the address for a[j] (a + j * 8)
+    LSL X13, X2, #3        // X13 = j * 8 (shift left j by 3)
+    ADD X14, X0, X13       // X14 = base address + j * 8 (this is the address of a[j])
+    LDUR X15, [X14, #0]    // Load a[j] into a register
+    STUR X15, [X11, #0]    // Store a[j] at a[i]
+    STUR X9, [X14, #0]     // Store temp (a[i]) at a[j]
+    
+    BR LR                  // Return from the function
+
+// Print array function (for testing purposes)
+printArray:
+    ADDI X9, XZR, #0       // Initialize loop counter (i = 0)
+    PRNT X9
+printLoop:
+    // Check if i >= n
+    SUBS X10, X9, X20       // Compare i with n
+    B.GE endPrintLoop      // Exit loop if i >= n
+
+    // Calculate the address of a[i] (a + i * 8)
+    LSL X12, X9, #3        // X12 = i * 8
+    ADD X13, X0, X12       // X13 = base address + i * 8
+
+    // Load a[i] and print it
+    LDUR X11, [X13, #0]    // Load a[i] into X11
+    PRNT X11               // Print the value of a[i] (you need a system call for this)
+
+    // Increment i
+    ADDI X9, X9, #1        // i++
+
+    B printLoop            // Repeat the loop
+
+endPrintLoop:
+    BR LR                  // Return from function
