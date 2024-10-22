@@ -54,6 +54,29 @@ fill:
     // End of loop
     exitLoop:    
     BR LR                  // Return from the function
+next_i:
+    //assume i, l, p are in registers x1, x2, x3
+    whileLoop:
+        //check if i is less or equal to l
+        SUBS X9, X1, X2   // Compare i (X1) with l (X2)
+        B.GT exitLoop      // If i > l, exit the loop
+
+        // Calculate the address for a[i] (a + i * 8)
+        LSL X10, X1, #3    // X10 = i * 8 (shift left i by 3)
+        ADD X11, X0, X10   // X11 = base address + i * 8 (this is the address of a[i])
+        
+        //check if a[i] < p
+        LDUR X12, [X11, #0] // Load the value of a[i] into X12
+        SUBS X13, X12, X3   // Compare a[i] (X14) with p (X3)
+        B.GE exitLoop       // If a[i] >= p, exit the loop
+    
+        // Increment i
+        ADDI X1, X1, #1    // i++
+        B whileLoop         // Repeat the loop
+
+    exitLoop:
+        BR LR               // Return from the function
+
 
 // Swap function
 swap:
@@ -76,23 +99,23 @@ swap:
 printArray:
     ADDI X9, XZR, #0       // Initialize loop counter (i = 0)
     PRNT X9
-printLoop:
-    // Check if i >= n
-    SUBS X10, X9, X20       // Compare i with n
-    B.GE endPrintLoop      // Exit loop if i >= n
+    printLoop:
+        // Check if i >= n
+        SUBS X10, X9, X20       // Compare i with n
+        B.GE endPrintLoop      // Exit loop if i >= n
 
-    // Calculate the address of a[i] (a + i * 8)
-    LSL X12, X9, #3        // X12 = i * 8
-    ADD X13, X0, X12       // X13 = base address + i * 8
+        // Calculate the address of a[i] (a + i * 8)
+        LSL X12, X9, #3        // X12 = i * 8
+        ADD X13, X0, X12       // X13 = base address + i * 8
 
-    // Load a[i] and print it
-    LDUR X11, [X13, #0]    // Load a[i] into X11
-    PRNT X11               // Print the value of a[i] (you need a system call for this)
+        // Load a[i] and print it
+        LDUR X11, [X13, #0]    // Load a[i] into X11
+        PRNT X11               // Print the value of a[i] (you need a system call for this)
 
-    // Increment i
-    ADDI X9, X9, #1        // i++
+        // Increment i
+        ADDI X9, X9, #1        // i++
 
-    B printLoop            // Repeat the loop
+        B printLoop            // Repeat the loop
 
-endPrintLoop:
-    BR LR                  // Return from function
+    endPrintLoop:
+        BR LR                  // Return from function
