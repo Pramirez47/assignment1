@@ -2,58 +2,40 @@
 ADDI X19, XZR, #8         // Assume array starts at address 8
 LDUR X0, [X19, #0]        // Load the base address of the array into X0
 
-// Place n into a register (n = 8 for testing)
-ADDI X20, XZR, #8          // n = 8
+// Set values of i, l, and p
+ADDI X1, XZR, #2          // i = 2 (starting index)
+ADDI X2, XZR, #7          // l = 7 (last index)
+ADDI X3, XZR, #10         // p = 10 (partition value)
 
-// Call 'fill' to fill the array
-BL fill                   // Transfer control to 'fill' function
+ADDI X12, XZR, #1         // Load the value 1 into X12
+STUR X12, [X19, #0]       // a[0] = 1
 
-// Print the array after 'fill' to check if values are correct
-BL printArray              // Call a procedure to print the array
+ADDI X12, XZR, #3         // Load the value 3 into X12
+STUR X12, [X19, #8]       // a[1] = 3
 
-// Set i and j for swapping
-ADDI X1, XZR, #3         // i = 2 (3rd element) //2nd element
-ADDI X2, XZR, #4         // j = 5 (6th element) //last eleement
+ADDI X12, XZR, #5         // Load the value 5 into X12
+STUR X12, [X19, #16]      // a[2] = 5
 
-// Call 'swap' to swap a[i] and a[j]
-BL swap                   // Transfer control to 'swap' function
+ADDI X12, XZR, #7         // Load the value 7 into X12
+STUR X12, [X19, #24]      // a[3] = 7
 
-// Print the array again after swapping
-BL printArray              // Call procedure to print the array after swap
+ADDI X12, XZR, #9         // Load the value 9 into X12
+STUR X12, [X19, #32]      // a[4] = 9
 
+ADDI X12, XZR, #11        // Load the value 11 into X12
+STUR X12, [X19, #40]      // a[5] = 11
+
+ADDI X12, XZR, #13        // Load the value 13 into X12
+STUR X12, [X19, #48]      // a[6] = 13
+
+ADDI X12, XZR, #15        // Load the value 15 into X12
+STUR X12, [X19, #56]      // a[7] = 15
+
+
+BL next_i:
+PRNT X4
 HALT                      // End the program
 
-// Fill array function
-fill: 
-    SUBI SP, SP, #8        // Allocate stack space if needed
-
-    // i variable = 0
-    ADDI X9, XZR, #0       // Set i to 0 (X9 will be our loop index)
-
-    // Start of loop
-    forLoop: 
-        SUBS X10, X9, X20   // Compare i (X9) with n (X1) by calculating i - n
-        B.GE exitLoop      // If i >= n, exit the loop
-
-        // Calculate n - i - 1
-        SUB X11, X20, X9    // X11 = n - i
-        SUBI X11, X11, #1  // X11 = (n - i) - 1
-
-        // Calculate the address for a[i] (a + i * 8)
-        LSL X12, X9, #3    // X12 = i * 8 (shift left i by 3)
-        ADD X13, X0, X12   // X13 = base address + i * 8 (this is the address of a[i])
-
-        // Store (n - i - 1) into a[i]
-        STUR X11, [X13, #0]  // Store X11 (n - i - 1) into a[i]
-
-        // Increment i
-        ADDI X9, X9, #1    // i++
-
-        B forLoop          // Jump back to the start of the loop
-
-    // End of loop
-    exitLoop:    
-    BR LR                  // Return from the function
 next_i:
     //assume i, l, p are in registers x1, x2, x3
     whileLoop:
@@ -75,25 +57,8 @@ next_i:
         B whileLoop         // Repeat the loop
 
     exitLoop:
+        MOV X4, X1          // Place return value in X4
         BR LR               // Return from the function
-
-
-// Swap function
-swap:
-    // Calculate the address for a[i] (a + i * 8)
-    LSL X10, X1, #3        // X10 = i * 8 (shift left i by 3)
-    ADD X11, X0, X10       // X11 = base address + i * 8 (this is the address of a[i])
-    LDUR X12, [X11, #0]    // Load a[i] into a register
-    ORR X9, XZR, X12       // Store a[i] in X9 (temp)
-        
-    // Calculate the address for a[j] (a + j * 8)
-    LSL X13, X2, #3        // X13 = j * 8 (shift left j by 3)
-    ADD X14, X0, X13       // X14 = base address + j * 8 (this is the address of a[j])
-    LDUR X15, [X14, #0]    // Load a[j] into a register
-    STUR X15, [X11, #0]    // Store a[j] at a[i]
-    STUR X9, [X14, #0]     // Store temp (a[i]) at a[j]
-    
-    BR LR                  // Return from the function
 
 // Print array function (for testing purposes)
 printArray:
