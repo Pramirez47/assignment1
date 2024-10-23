@@ -2,67 +2,57 @@
 ADDI X19, XZR, #8         // X19 = 8 //address of base array 
 LDUR X0, [X19, #0]        // X0 = base address of array (offset is calculated)
 
-// Set values of i, l, and p
-ADDI X1, XZR, #2          // i = 2 (starting index)
-ADDI X2, XZR, #7          // l = 7 (last index)
+// Set values of j, f, and p
+ADDI X1, XZR, #7          // j = 7 (starting index)
+ADDI X2, XZR, #2          // f = 2 (lower bound)
 ADDI X3, XZR, #10         // p = 10 (partition value)
 
+// Load array values into memory
 ADDI X12, XZR, #1         // Load the value 1 into X12
-STUR X12, [X0, #0]       // a[0] = 1
+STUR X12, [X0, #0]        // a[0] = 1
 
 ADDI X12, XZR, #3         // Load the value 3 into X12
-STUR X12, [X0, #8]       // a[1] = 3
+STUR X12, [X0, #8]        // a[1] = 3
 
 ADDI X12, XZR, #5         // Load the value 5 into X12
-STUR X12, [X0, #16]      // a[2] = 5
+STUR X12, [X0, #16]       // a[2] = 5
 
 ADDI X12, XZR, #7         // Load the value 7 into X12
-STUR X12, [X0, #24]      // a[3] = 7
+STUR X12, [X0, #24]       // a[3] = 7
 
 ADDI X12, XZR, #9         // Load the value 9 into X12
-STUR X12, [X0, #32]      // a[4] = 9
+STUR X12, [X0, #32]       // a[4] = 9
 
 ADDI X12, XZR, #11        // Load the value 11 into X12
-STUR X12, [X0, #40]      // a[5] = 11
+STUR X12, [X0, #40]       // a[5] = 11
 
 ADDI X12, XZR, #13        // Load the value 13 into X12
-STUR X12, [X0, #48]      // a[6] = 13
+STUR X12, [X0, #48]       // a[6] = 13
 
 ADDI X12, XZR, #15        // Load the value 15 into X12
-STUR X12, [X0, #56]      // a[7] = 15
+STUR X12, [X0, #56]       // a[7] = 15
 
 
-BL next_i
-// PRNT X4
-HALT                      // End the program
+partition:
+    //assume f and l are in registers x1, x2
 
-next_i:
-    PRNT XZR
-    //assume i, l, p are in registers x1, x2, x3
-    whileLoop:
-        //check if i is less or equal to l (this conditional seems to work)
-        SUBS X9, X1, X2   // Compare i (X1) with l (X2)
-        B.GE exitLoop      // If i >= l, exit the loop
+     // Calculate the address for a[f] (a + f * 8)
+    LSL X12, X1, #3    // X12 = f * 8 (shift left i by 3)
+    ADD X13, X0, X13   // X13 = base address + f * 8 (this is the address of a[f])
 
-        // Calculate the address for a[i] (a + i * 8)
-        LSL X10, X1, #3    // X10 = i * 8 (shift left i by 3)
-        ADD X11, X0, X10   // X11 = base address + i * 8 (this is the address of a[i])
-        
-        //check if a[i] < p
-        LDUR X12, [X11, #0] // Load the value of a[i] into X12
-        PRNT X12
-        SUBS X13, X12, X3   // Compare a[i] (X14) with p (X3)
-        B.GE exitLoop       // If a[i] >= p, exit the loop
-    
-        // Increment i
-        ADDI X1, X1, #1    // i++
-        B whileLoop         // Repeat the loop
+    LDUR X14, [X13, #0] // Load the value of a[j] into X15
+    ORR X11, XZR, X14   //p = a[f]
+    ADDI X9, X1, #1   //i = f + 1
+    ORR X10, XZR, X2   //j = l
 
-    exitLoop:
-        
-        ORR X4, XZR, X12      // Place return value in X4
-        PRNT X4
-        BR LR               // Return from the function
+    loopPartition:
+        // Check if i <= j
+        SUBS X11, X9, X10   // Subtract j from i, result in X11, and set condition flags
+        B.GT exitLoopPartition      // If i > j, exit the loop
+        BL next_i
+        BL next_j
+
+
 
 // Print array function (for testing purposes)
 printArray:
