@@ -36,7 +36,7 @@ BL next_i
 // PRNT X4
 HALT                      // End the program
 
-next_i:
+next_j:
     PRNT XZR
     //assume i, l, p are in registers x1, x2, x3
     whileLoop:
