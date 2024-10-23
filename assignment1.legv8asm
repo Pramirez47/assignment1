@@ -3,9 +3,9 @@ ADDI X19, XZR, #8         // X19 = 8 //address of base array
 LDUR X0, [X19, #0]        // X0 = base address of array (offset is calculated)
 
 // Set values of i, l, and p
-ADDI X1, XZR, #2          // i = 2 (starting index)
-ADDI X2, XZR, #7          // l = 7 (last index)
-ADDI X3, XZR, #10         // p = 10 (partition value)
+ADDI X1, XZR, #3        // i = 7 (starting index)
+ADDI X2, XZR, #0          // l = 0 (last index)
+ADDI X3, XZR, #4         // p = 10 (partition value)
 
 ADDI X12, XZR, #1         // Load the value 1 into X12
 STUR X12, [X0, #0]       // a[0] = 1
@@ -32,35 +32,35 @@ ADDI X12, XZR, #15        // Load the value 15 into X12
 STUR X12, [X0, #56]      // a[7] = 15
 
 
-BL next_i
+BL next_j
 // PRNT X4
 HALT                      // End the program
 
 next_j:
     PRNT XZR
-    //assume i, l, p are in registers x1, x2, x3
+    //assume j, f, p are in registers x1, x2, x3
     whileLoop:
         //check if i is less or equal to l (this conditional seems to work)
-        SUBS X9, X1, X2   // Compare i (X1) with l (X2)
-        B.GE exitLoop      // If i >= l, exit the loop
+        SUBS X9, X2, X1   // Compare j (X1) with f (X2)
+        B.GE exitLoop      // If f >= j, exit the loop
 
         // Calculate the address for a[i] (a + i * 8)
         LSL X10, X1, #3    // X10 = i * 8 (shift left i by 3)
         ADD X11, X0, X10   // X11 = base address + i * 8 (this is the address of a[i])
         
-        //check if a[i] < p
+        //check if a[j] > p
         LDUR X12, [X11, #0] // Load the value of a[i] into X12
         PRNT X12
-        SUBS X13, X12, X3   // Compare a[i] (X14) with p (X3)
-        B.GE exitLoop       // If a[i] >= p, exit the loop
+        SUBS X13, X12, X3   // Compare a[j] (X12) with p (X3)
+        B.LT exitLoop       // If a[j] <= p, exit the loop
     
         // Increment i
-        ADDI X1, X1, #1    // i++
+        SUBI X1, X1, #1    // i++
         B whileLoop         // Repeat the loop
 
     exitLoop:
         
-        ORR X4, XZR, X12      // Place return value in X4
+        ORR X4, XZR, X1      // Place return value in X4
         PRNT X4
         BR LR               // Return from the function
 
