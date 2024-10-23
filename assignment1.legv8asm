@@ -2,10 +2,10 @@
 ADDI X19, XZR, #8         // X19 = 8 //address of base array 
 LDUR X0, [X19, #0]        // X0 = base address of array (offset is calculated)
 
-// Set values of i, l, and p
-ADDI X1, XZR, #2          // i = 2 (starting index)
-ADDI X2, XZR, #7          // l = 7 (last index)
-ADDI X3, XZR, #10         // p = 10 (partition value)
+// Test case setup
+ADDI X1, XZR, #2          // Set i = 2 (starting index)
+ADDI X2, XZR, #5          // Set l = 5 (last index)
+ADDI X3, XZR, #6          // Set p = 6 (partition value)
 
 ADDI X12, XZR, #1         // Load the value 1 into X12
 STUR X12, [X0, #0]       // a[0] = 1
@@ -60,7 +60,7 @@ next_i:
 
     exitLoop:
         
-        ORR X4, XZR, X12      // Place return value in X4
+        ORR X4, XZR, X1     // Place return value in X4
         PRNT X4
         BR LR               // Return from the function
 
