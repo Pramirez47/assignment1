@@ -35,6 +35,29 @@ STUR X12, [X0, #56]      // a[7] = 15
 BL next_j
 // PRNT X4
 HALT                      // End the program
+
+
+
+partition:
+    //assume f and l are in registers x1, x2
+
+     // Calculate the address for a[f] (a + f * 8)
+    LSL X12, X1, #3    // X12 = f * 8 (shift left i by 3)
+    ADD X13, X0, X13   // X13 = base address + f * 8 (this is the address of a[f])
+
+    LDUR X14, [X13, #0] // Load the value of a[j] into X15
+    ORR X11, XZR, X14   //p = a[f]
+    ADDI X9, X1, #1   //i = f + 1
+    ORR X10, XZR, X2   //j = l
+
+    loopPartition:
+        // Check if i <= j
+        SUBS X11, X9, X10   // Subtract j from i, result in X11, and set condition flags
+        B.GT exitLoopPartition      // If i > j, exit the loop
+        BL next_i
+        BL next_j
+
+
 next_i:
     PRNT XZR
     //assume i, l, p are in registers x1, x2, x3
