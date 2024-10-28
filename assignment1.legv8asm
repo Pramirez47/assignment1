@@ -35,6 +35,33 @@ STUR X12, [X0, #56]      // a[7] = 15
 BL next_j
 // PRNT X4
 HALT                      // End the program
+next_i:
+    PRNT XZR
+    //assume i, l, p are in registers x1, x2, x3
+    whileLoop:
+        //check if i is less or equal to l (this conditional seems to work)
+        SUBS X9, X1, X2   // Compare i (X1) with l (X2)
+        B.GE exitLoop      // If i >= l, exit the loop
+
+        // Calculate the address for a[i] (a + i * 8)
+        LSL X10, X1, #3    // X10 = i * 8 (shift left i by 3)
+        ADD X11, X0, X10   // X11 = base address + i * 8 (this is the address of a[i])
+        
+        //check if a[i] < p
+        LDUR X12, [X11, #0] // Load the value of a[i] into X12
+        PRNT X12
+        SUBS X13, X12, X3   // Compare a[i] (X14) with p (X3)
+        B.GE exitLoop       // If a[i] >= p, exit the loop
+    
+        // Increment i
+        ADDI X1, X1, #1    // i++
+        B whileLoop         // Repeat the loop
+
+    exitLoop:
+        
+        ORR X4, XZR, X1     // Place return value in X4
+        PRNT X4
+        BR LR               // Return from the function
 
 next_j:
     PRNT XZR
@@ -55,7 +82,7 @@ next_j:
         B.LT exitLoop       // If a[j] <= p, exit the loop
     
         // Increment i
-        SUBI X1, X1, #1    // i++
+        SUBI X1, X1, #1    // i--
         B whileLoop         // Repeat the loop
 
     exitLoop:
