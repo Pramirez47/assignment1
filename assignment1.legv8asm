@@ -15,7 +15,7 @@ partition:
 
      // Calculate the address for a[f] (a + f * 8)
     LSL X12, X1, #3    // X12 = f * 8 (shift left i by 3)
-    ADD X13, X0, X13   // X13 = base address + f * 8 (this is the address of a[f])
+    ADD X13, X0, X12   // X13 = base address + f * 8 (this is the address of a[f])
 
     LDUR X14, [X13, #0] // Load the value of a[j] into X15
     ORR X11, XZR, X14   //p = a[f]
@@ -26,16 +26,23 @@ partition:
         // Check if i <= j
         SUBS X11, X9, X10   // Subtract j from i, result in X11, and set condition flags
         B.GT exitLoopPartition      // If i > j, exit the loop
-        //save f and l 
+        //save f, l
         ORR X19, XZR, X1   
         ORR X20, XZR, X2   
+
         //place parameters (a, i, l, p)
+        ORR X1, XZR, X9   
+        // ORR X2, XZR, X2  
+        ORR X3, XZR, X11
+        BL next_i //x4 is return value
+        ORR X9, XZR, X4 
+
+        //place parameters (a, j, f, p)
         ORR X1, XZR, X1   
         ORR X2, XZR, X2  
-        ORR X3, XZR, X2  
-        BL next_i
-        //place parameters
-        BL next_j
+        ORR X3, XZR, X11
+        BL next_j //x4 is return value
+        ORR X10, XZR, X4 
 
 
 next_i:
@@ -118,3 +125,37 @@ printArray:
 
     endPrintLoop:
         BR LR                  // Return from function
+
+// Fill array function
+fill: 
+    // i variable = 0
+    ADDI X9, XZR, #0   // Set i to 0 (X9 will be our loop index)
+
+    // // Save n (X1) in X20 because we will modify X1
+    // ADDI X20, X1, #0    // X19 = n (saving n in X19 for later use)
+
+    // Start of loop
+    forLoop: 
+        //make X2 equal to x19
+        SUBS X10, X9, X1 // Compare i (X9) with n (X1) by calculating i - n
+        B.GE exitLoop    // If i >= n, exit the loop
+        
+        // Calculate n - i - 1
+        SUB X11, X1, X9   // X11 = n - i
+        SUBI X11, X11, #1  // X11 = (n - i) - 1
+
+        // Calculate the address for a[i] (a + i * 8)
+        LSL X12, X9, #3   // X12 = i * 8 (shift left i by 3)
+        ADD X13, X0, X12   // X13 = base address + i * 8 (this is the address of a[i])
+
+        // Store (n - i - 1) into a[i]
+        STUR X11, [X13, #0]  // Store X4 (n - i - 1) into a[i]
+
+        // Increment i
+        ADDI X9, X9, #1   // i++
+
+        B forLoop         // Jump back to the start of the loop
+
+    // End of loop
+    exitLoop:    
+    BR LR                // Return from the function
