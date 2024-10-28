@@ -1,41 +1,13 @@
 // Store the base address of the array in X19
-ADDI X19, XZR, #8         // X19 = 8 //address of base array 
-LDUR X0, [X19, #0]        // X0 = base address of array (offset is calculated)
+ADDI X19, XZR, #8
+// Transfer control to procedure, get the base address of the array
+LDUR X0, [X19, #0]  // Load the base address of the array into X0
+PRNT X0     // Print register
 
-// Set values of i, l, and p
-ADDI X1, XZR, #3        // i = 7 (starting index)
-ADDI X2, XZR, #0          // l = 0 (last index)
-ADDI X3, XZR, #4         // p = 10 (partition value)
+// Place n into a register
+ADDI X1, XZR, #16   //n = 8 (this will be used for testing)
 
-ADDI X12, XZR, #1         // Load the value 1 into X12
-STUR X12, [X0, #0]       // a[0] = 1
-
-ADDI X12, XZR, #3         // Load the value 3 into X12
-STUR X12, [X0, #8]       // a[1] = 3
-
-ADDI X12, XZR, #5         // Load the value 5 into X12
-STUR X12, [X0, #16]      // a[2] = 5
-
-ADDI X12, XZR, #7         // Load the value 7 into X12
-STUR X12, [X0, #24]      // a[3] = 7
-
-ADDI X12, XZR, #9         // Load the value 9 into X12
-STUR X12, [X0, #32]      // a[4] = 9
-
-ADDI X12, XZR, #11        // Load the value 11 into X12
-STUR X12, [X0, #40]      // a[5] = 11
-
-ADDI X12, XZR, #13        // Load the value 13 into X12
-STUR X12, [X0, #48]      // a[6] = 13
-
-ADDI X12, XZR, #15        // Load the value 15 into X12
-STUR X12, [X0, #56]      // a[7] = 15
-
-
-BL next_j
-// PRNT X4
-HALT                      // End the program
-
+BL fill     // Transfer control to 'fill' function
 
 
 partition:
@@ -54,7 +26,15 @@ partition:
         // Check if i <= j
         SUBS X11, X9, X10   // Subtract j from i, result in X11, and set condition flags
         B.GT exitLoopPartition      // If i > j, exit the loop
+        //save f and l 
+        ORR X19, XZR, X1   
+        ORR X20, XZR, X2   
+        //place parameters (a, i, l, p)
+        ORR X1, XZR, X1   
+        ORR X2, XZR, X2  
+        ORR X3, XZR, X2  
         BL next_i
+        //place parameters
         BL next_j
 
 
