@@ -25,9 +25,14 @@ STUR X12, [X0, #40]      // a[5] = 2
 ADDI X12, XZR, #9        // Load the value 13 into X12
 STUR X12, [X0, #48]      // a[6] = 9
 BL partition
+
 HALT 
 
 partition:
+    SUBI SP, SP, #8 // adjust stack for 1 item STUR LR, [SP,#8] 
+    STUR LR, [SP,#0] // save the return address
+
+    PRNT X27
     //assume f and l are in registers x1, x2
      // Calculate the address for a[f] (a + f * 8)
     LSL X12, X1, #3    // X12 = f * 8 (shift left i by 3)
@@ -92,7 +97,11 @@ partition:
         //return j
         ORR X4, XZR, X21
         PRNT X4
-        BR LR
+        PRNT X30
+        LDUR LR, [SP,#0]       // Load the saved return address (LR) from the stack
+        ADDI SP, SP, #8        // Adjust the stack pointer back 
+
+        BR LR                      // Return to the caller
 
 next_i:
     //assume i, l, p are in registers x1, x2, x3
