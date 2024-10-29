@@ -42,7 +42,8 @@ partition:
 
         // Check if i <= j
         SUBS X15, X9, X21   // Subtract j from i, result in X15, and set condition flags
-        B.GT exitLoopPartition      // If i > j, exit the loop
+
+        B.GT exitLoopPartition      // If i > j, exit the loop (only way to exist this loop)
         //save f, l
         ORR X19, XZR, X1   
         ORR X20, XZR, X2   
@@ -51,7 +52,9 @@ partition:
         ORR X1, XZR, X9     
         ORR X3, XZR, X22
         BL next_i //x4 is return value
-        ORR X9, XZR, X4 
+        ORR X9, XZR, X4                             //this is prob getting altered in nextJ
+        //save x9
+        ORR X23, XZR, X9
         PRNT X9
         //place parameters (a, j, f, p)
         ORR X1, XZR, X21
@@ -59,13 +62,34 @@ partition:
         ORR X3, XZR, X22
         BL next_j //x4 is return value
         ORR X10, XZR, X4 
+        PRNT X10 
+        ///////////////////////////
+        //if (i < j)
+        SUBS X15, X23, X10   // Subtract j from i, result in X11, and set condition flags
+        PRNT X23
         PRNT X10
         HALT
-        SUBS X15, X9, X10   // Subtract j from i, result in X11, and set condition flags
-        B.GT exitLoopPartition      // If i > j, exit the loop
+        B.GE loopPartition      // If i >= j, then reloop again
 
-        exitLoopPartition:
-            BR LR               // Return from the function
+        //if i is less than j, perform swap, set parameters first
+        ORR X1, XZR, X23   //x1 = i
+        ORR X2, XZR, X21   //x2 = j
+        //if (i < j) { swap(a, i, j);}
+        BL swap
+        //loop again
+        B loopPartition
+    //this is second conditonal
+    exitLoopPartition:
+        HALT 
+        //check if i and j are equal
+        SUBS X11, X23, X21     // Subtract X10 from X9 and set condition flags
+        B.EQ returnJ      // If X9 == X10, branch to equalValues
+        //if i is less than j, perform swap, set parameters first
+        ORR X1, XZR, X21
+        ORR X2, XZR, X19
+        BL swap
+    returnJ:
+        //
 
 next_i:
     //assume i, l, p are in registers x1, x2, x3
@@ -101,7 +125,6 @@ next_j:
         //check if i is less or equal to l (this conditional seems to work)
         SUBS X9, X2, X1   // Compare j (X1) with f (X2)
         B.GE exitLoopJ      // If f >= j, exit the loop
-
         // Calculate the address for a[i] (a + i * 8)
         LSL X10, X1, #3    // X10 = i * 8 (shift left i by 3)
         ADD X11, X0, X10   // X11 = base address + i * 8 (this is the address of a[i])
@@ -117,7 +140,7 @@ next_j:
         B whileLoopJ         // Repeat the loop
 
     exitLoopJ:
-        
+
         ORR X4, XZR, X1      // Place return value in X4
         // PRNT X4
         BR LR               // Return from the function
