@@ -35,13 +35,15 @@ partition:
     LDUR X14, [X13, #0] // Load the value of a[j] into X14
     //SAVE P
     ORR X22, XZR, X14   //p = a[f]
-    ADDI X9, X1, #1   //i = f + 1
+    ADDI X23, X1, #1   //i = f + 1
     //SAVE j
     ORR X21, XZR, X2   //j = l
     loopPartition:
-
+        PRNT X27
+        PRNT X23
+        PRNT X21
         // Check if i <= j
-        SUBS X15, X9, X21   // Subtract j from i, result in X15, and set condition flags
+        SUBS X15, X23, X21   // Subtract j from i, result in X15, and set condition flags
 
         B.GT exitLoopPartition      // If i > j, exit the loop (only way to exist this loop)
         //save f, l
@@ -49,37 +51,35 @@ partition:
         ORR X20, XZR, X2   
 
         //place parameters (a, i, l, p)
-        ORR X1, XZR, X9     
+        ORR X1, XZR, X23     
         ORR X3, XZR, X22
         BL next_i //x4 is return value
-        ORR X9, XZR, X4                             //this is prob getting altered in nextJ
-        //save x9
-        ORR X23, XZR, X9
-        PRNT X9
+        ORR X23, XZR, X4                             //this is prob getting altered in nextJ
+
         //place parameters (a, j, f, p)
         ORR X1, XZR, X21
         ORR X2, XZR, X19
         ORR X3, XZR, X22
         BL next_j //x4 is return value
-        ORR X10, XZR, X4 
-        PRNT X10 
+        ORR X21, XZR, X4 
         ///////////////////////////
         //if (i < j)
-        SUBS X15, X23, X10   // Subtract j from i, result in X11, and set condition flags
+        SUBS X15, X23, X21   // Subtract j from i, result in X11, and set condition flags
         PRNT X23
-        PRNT X10
-        HALT
+        PRNT X21
+    
         B.GE loopPartition      // If i >= j, then reloop again
 
         //if i is less than j, perform swap, set parameters first
         ORR X1, XZR, X23   //x1 = i
         ORR X2, XZR, X21   //x2 = j
+
         //if (i < j) { swap(a, i, j);}
         BL swap
         //loop again
         B loopPartition
     //this is second conditonal
-    exitLoopPartition:
+    exitLoopPartition: 
         HALT 
         //check if i and j are equal
         SUBS X11, X23, X21     // Subtract X10 from X9 and set condition flags
