@@ -24,44 +24,43 @@ STUR X12, [X0, #40]      // a[5] = 2
 
 ADDI X12, XZR, #9        // Load the value 13 into X12
 STUR X12, [X0, #48]      // a[6] = 9
-DUMP
 BL partition
 HALT 
 
 partition:
     //assume f and l are in registers x1, x2
-
      // Calculate the address for a[f] (a + f * 8)
     LSL X12, X1, #3    // X12 = f * 8 (shift left i by 3)
     ADD X13, X0, X12   // X13 = base address + f * 8 (this is the address of a[f])
-
     LDUR X14, [X13, #0] // Load the value of a[j] into X14
-    ORR X11, XZR, X14   //p = a[f]
+    //SAVE P
+    ORR X22, XZR, X14   //p = a[f]
     ADDI X9, X1, #1   //i = f + 1
-    ORR X10, XZR, X2   //j = l
-
+    //SAVE j
+    ORR X21, XZR, X2   //j = l
     loopPartition:
+
         // Check if i <= j
-        SUBS X15, X9, X10   // Subtract j from i, result in X15, and set condition flags
+        SUBS X15, X9, X21   // Subtract j from i, result in X15, and set condition flags
         B.GT exitLoopPartition      // If i > j, exit the loop
         //save f, l
         ORR X19, XZR, X1   
         ORR X20, XZR, X2   
 
         //place parameters (a, i, l, p)
-        ORR X1, XZR, X9   
-        // ORR X2, XZR, X2  
-        ORR X3, XZR, X11
+        ORR X1, XZR, X9     
+        ORR X3, XZR, X22
         BL next_i //x4 is return value
         ORR X9, XZR, X4 
         PRNT X9
         //place parameters (a, j, f, p)
-        ORR X1, XZR, X1   
-        ORR X2, XZR, X2  
-        ORR X3, XZR, X11
+        ORR X1, XZR, X21
+        ORR X2, XZR, X19
+        ORR X3, XZR, X22
         BL next_j //x4 is return value
         ORR X10, XZR, X4 
         PRNT X10
+        HALT
         SUBS X15, X9, X10   // Subtract j from i, result in X11, and set condition flags
         B.GT exitLoopPartition      // If i > j, exit the loop
 
@@ -69,16 +68,12 @@ partition:
             BR LR               // Return from the function
 
 next_i:
-
-    PRNT X1
-    PRNT X2
-    PRNT X3
     //assume i, l, p are in registers x1, x2, x3
+    PRNL 
     whileLoopI:
         //check if i is less or equal to l (this conditional seems to work)
         SUBS X9, X1, X2   // Compare i (X1) with l (X2)
         B.GE exitLoopI      // If i >= l, exit the loop
-        PRNT X27
         // Calculate the address for a[i] (a + i * 8)
         LSL X10, X1, #3    // X10 = i * 8 (shift left i by 3)
         ADD X11, X0, X10   // X11 = base address + i * 8 (this is the address of a[i])
@@ -97,16 +92,15 @@ next_i:
     exitLoopI:
         
         ORR X4, XZR, X1     // Place return value in X4
-        PRNT X4
         BR LR               // Return from the function
 
 next_j:
-    // PRNT XZR
+    PRNL
     //assume j, f, p are in registers x1, x2, x3
-    whileLoop:
+    whileLoopJ:
         //check if i is less or equal to l (this conditional seems to work)
         SUBS X9, X2, X1   // Compare j (X1) with f (X2)
-        B.GE exitLoop      // If f >= j, exit the loop
+        B.GE exitLoopJ      // If f >= j, exit the loop
 
         // Calculate the address for a[i] (a + i * 8)
         LSL X10, X1, #3    // X10 = i * 8 (shift left i by 3)
@@ -116,13 +110,13 @@ next_j:
         LDUR X12, [X11, #0] // Load the value of a[i] into X12
         // PRNT X12
         SUBS X13, X12, X3   // Compare a[j] (X12) with p (X3)
-        B.LT exitLoop       // If a[j] <= p, exit the loop
+        B.LT exitLoopJ       // If a[j] <= p, exit the loop
     
         // Increment i
         SUBI X1, X1, #1    // i--
-        B whileLoop         // Repeat the loop
+        B whileLoopJ         // Repeat the loop
 
-    exitLoop:
+    exitLoopJ:
         
         ORR X4, XZR, X1      // Place return value in X4
         // PRNT X4
@@ -162,10 +156,10 @@ fill:
     // ADDI X20, X1, #0    // X19 = n (saving n in X19 for later use)
 
     // Start of loop
-    forLoop: 
+    fillLoop: 
         //make X2 equal to x19
         SUBS X10, X9, X1 // Compare i (X9) with n (X1) by calculating i - n
-        B.GE exitLoop    // If i >= n, exit the loop
+        B.GE exitLoopFill    // If i >= n, exit the loop
         
         // Calculate n - i - 1
         SUB X11, X1, X9   // X11 = n - i
@@ -181,11 +175,11 @@ fill:
         // Increment i
         ADDI X9, X9, #1   // i++
 
-        B forLoop         // Jump back to the start of the loop
+        B fillLoop         // Jump back to the start of the loop
 
     // End of loop
-    exitLoop:    
-    BR LR                // Return from the function
+    exitLoopFill:    
+        BR LR                // Return from the function
 
 // Swap function
 swap:
