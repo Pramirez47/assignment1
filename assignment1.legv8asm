@@ -3,28 +3,37 @@ ADDI X27, XZR, #54          // for testing
 
 // Test case setup
 
-ADDI X12, XZR, #5         // Load the value 1 into X12
+ADDI X12, XZR, #8         // Load the value 1 into X12
 STUR X12, [X0, #0]       // a[0] = 8
 
-ADDI X12, XZR, #4         // Load the value 3 into X12
+ADDI X12, XZR, #7         // Load the value 3 into X12
 STUR X12, [X0, #8]       // a[1] = 3
 
-ADDI X12, XZR, #3        // Load the value 5 into X12
+ADDI X12, XZR, #6        // Load the value 5 into X12
 STUR X12, [X0, #16]      // a[2] = 1
 
-ADDI X12, XZR, #2         // Load the value 7 into X12
+ADDI X12, XZR, #5         // Load the value 7 into X12
 STUR X12, [X0, #24]      // a[3] = 7
 
-ADDI X12, XZR, #1         // Load the value 9 into X12
+ADDI X12, XZR, #4         // Load the value 9 into X12
 STUR X12, [X0, #32]      // a[4] = 5
 
-ADDI X12, XZR, #0        // Load the value 11 into X12
+ADDI X12, XZR, #3        // Load the value 11 into X12
 STUR X12, [X0, #40]      // a[5] = 2
+
+ADDI X12, XZR, #2        // Load the value 11 into X12
+STUR X12, [X0, #48]      // a[5] = 2
+
+ADDI X12, XZR, #1        // Load the value 11 into X12
+STUR X12, [X0, #56]      // a[5] = 2
+
+ADDI X12, XZR, #0        // Load the value 11 into X12
+STUR X12, [X0, #64]      // a[5] = 2
 
 //add in parameters for quicksort
 ADDI X0, XZR, #0 
 // x1 equals n - 1
-ADDI X1, XZR, #7          // Set l = 6 (last index)
+ADDI X1, XZR, #9          // Set l = 6 (last index)
 BL quicksort
 HALT 
 
@@ -38,7 +47,7 @@ quicksort:
     //add in f
     ORR X1, XZR, XZR   //l = 0
     BL quicksort_recurse
-    PRNT X27
+
     HALT
     LDUR LR, [SP,#0]       // Load the saved return address (LR) from the stack
     ADDI SP, SP, #8        // Adjust the stack pointer back 
@@ -149,57 +158,75 @@ partition:
         BR LR                      // Return to the caller
 
 next_i:
-    //assume i, l, p are in registers x1, x2, x3
+    // assume i, l, p are in registers x1, x2, x3
     PRNL 
     whileLoopI:
-        //check if i is less or equal to l (this conditional seems to work)
+        // check if i is less or equal to l (this conditional seems to work)
         SUBS X9, X1, X2   // Compare i (X1) with l (X2)
-        B.GT exitLoopI      // If i >= l, exit the loop
+        B.GT exitLoopI    // If i > l, exit the loop
+
         // Calculate the address for a[i] (a + i * 8)
-        LSL X10, X1, #3    // X10 = i * 8 (shift left i by 3)
-        ADD X11, X0, X10   // X11 = base address + i * 8 (this is the address of a[i])
-        
-        //check if a[i] < p
+        LSL X10, X1, #3   // X10 = i * 8 (shift left i by 3)
+        ADD X11, X0, X10  // X11 = base address + i * 8 (this is the address of a[i])
+
+        // check if a[i] < p
         LDUR X12, [X11, #0] // Load the value of a[i] into X12
         SUBS X13, X12, X3   // Compare a[i] (X14) with p (X3)
-        B.GE exitLoopI       // If a[i] >= p, exit the loop
-    
-        // Increment i
-        ADDI X1, X1, #1    // i++
+        B.GE exitLoopI      // If a[i] >= p, exit the loop
 
-        B whileLoopI         // Repeat the loop
+        // Increment i
+        ADDI X1, X1, #1     // i++
+
+        B whileLoopI        // Repeat the loop
 
     exitLoopI:
-        
-        ORR X4, XZR, X1     // Place return value in X4
+        // Check if i > l to return l + 1
+        SUBS X9, X1, X2     // Compare i with l again
+        B.LE return_i       // If i <= l, return i
+
+        // Return l + 1
+        ADDI X4, X2, #1     // Set return value to l + 1
         BR LR               // Return from the function
+
+    return_i:
+        ORR X4, XZR, X1     // Place return value (i) in X4
+        BR LR               // Return from the function
+
+
 
 next_j:
-    PRNL
-    //assume j, f, p are in registers x1, x2, x3
+    PRNL 
+    // assume j, f, p are in registers x1, x2, x3
     whileLoopJ:
-        //check if i is less or equal to l (this conditional seems to work)
-        SUBS X9, X2, X1   // Compare j (X1) with f (X2)
-        B.GE exitLoopJ      // If f >= j, exit the loop
-        // Calculate the address for a[i] (a + i * 8)
-        LSL X10, X1, #3    // X10 = i * 8 (shift left i by 3)
-        ADD X11, X0, X10   // X11 = base address + i * 8 (this is the address of a[i])
-        
-        //check if a[j] > p
-        LDUR X12, [X11, #0] // Load the value of a[i] into X12
+        // check if j is less than or equal to f
+        SUBS X9, X1, X2       // Compare j (X1) with f (X2)
+        B.LE exitLoopJ        // If j <= f, exit the loop
 
-        SUBS X13, X12, X3   // Compare a[j] (X12) with p (X3)
-        B.LT exitLoopJ       // If a[j] <= p, exit the loop
-    
-        // Increment i
-        SUBI X1, X1, #1    // i--
-        B whileLoopJ         // Repeat the loop
+        // Calculate the address for a[j] (a + j * 8)
+        LSL X10, X1, #3       // X10 = j * 8 (shift left j by 3)
+        ADD X11, X0, X10      // X11 = base address + j * 8 (this is the address of a[j])
+
+        // Check if a[j] >= p
+        LDUR X12, [X11, #0]   // Load the value of a[j] into X12
+        SUBS X13, X12, X3     // Compare a[j] (X12) with p (X3)
+        B.LT exitLoopJ        // If a[j] < p, exit the loop
+
+        // Decrement j
+        SUBI X1, X1, #1       // j--
+        B whileLoopJ          // Repeat the loop
 
     exitLoopJ:
+        // Check if j <= f to return f
+        SUBS X9, X1, X2       // Compare j with f again
+        B.GT return_j         // If j > f, return j
 
-        ORR X4, XZR, X1      // Place return value in X4
+        // Return f
+        ORR X4, XZR, X2       // Set return value to f
+        BR LR                 // Return from the function
 
-        BR LR               // Return from the function
+    return_j:
+        ORR X4, XZR, X1       // Place return value (j) in X4
+        BR LR                 // Return from the function
 
 
 // Fill array function
