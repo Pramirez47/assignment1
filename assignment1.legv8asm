@@ -26,7 +26,7 @@ STUR X12, [X0, #48]      // a[6] = 9
 //add in parameters for quicksort
 ADDI X0, XZR, #0 
 // x1 equals n - 1
-ADDI X1, XZR, #6          // Set l = 6 (last index)
+ADDI X1, XZR, #7          // Set l = 6 (last index)
 BL quicksort
 HALT 
 
@@ -46,40 +46,40 @@ quicksort:
     BL LR
 // 
 quicksort_recurse:
+
     //assume f and l are on x1, x2
-    // Prologue: Save LR, f, l on the stack
-    SUBI SP, SP, #16         // Make space for 2 values (f, l) and LR
+    SUBI SP, SP, #24         // Make space for 2 values (f, l) and LR
     STUR LR, [SP,#0]         // Save LR (link register) on the stack
     STUR X1, [SP,#8]         // Save f (X1) on the stack
-    STUR X2, [SP,#12]        // Save l (X2) on the stack
+    STUR X2, [SP,#16]        // Save l (X2) on the stack
+
 
     // Check if f >= l
     SUBS X9, X1, X2          // X9 = f - l
     B.GE quicksort_return    // If f >= l, return
 
     // Call partition(a, f, l)
-    MOV X0, X0               // a remains in X0 (base address of array)
-    MOV X1, X1               // f is in X1
-    MOV X2, X2               // l is in X2
     BL partition             // Call partition, return value is in X4 (p)
+    LDUR X1, [SP,#8]         // Restore f (X1) from the stack
+    LDUR X2, [SP,#16]        // Restore l (X2) from the stack
 
+    ORR X9, XZR, X4          //p = partition (a, f, l)
     // Recursive call: quicksort_recurse(a, f, p-1)
-    SUBI X2, X4, #1          // l = p - 1
+    SUBI X2, X9, #1          // l = p - 1
     BL quicksort_recurse      // Call quicksort_recurse with updated l
 
     // Recursive call: quicksort_recurse(a, p+1, l)
     ADDI X1, X4, #1          // f = p + 1
-    MOV X2, XZR              // Reset l to the original
+    ORR X9, XZR, X4          //p = partition (a, f, l)
     BL quicksort_recurse      // Call quicksort_recurse with updated f
+    //end of quicksort_recurse 
+    quicksort_return:
+        LDUR X1, [SP,#8]         // Restore f
+        LDUR X2, [SP,#16]        // Restore l
+        LDUR LR, [SP,#0]         // Restore LR
+        ADDI SP, SP, #24         // Restore stack pointer
+        BR LR                    // Return to the caller
 
-quicksort_return:
-    // Epilogue: Restore LR, f, l and return
-    LDUR X1, [SP,#8]         // Restore f
-    LDUR X2, [SP,#12]        // Restore l
-    LDUR LR, [SP,#0]         // Restore LR
-    ADDI SP, SP, #16         // Restore stack pointer
-    BR LR                    // Return to the caller
- 
 
 partition:
     SUBI SP, SP, #8 // adjust stack for 1 item STUR LR, [SP,#8] 
