@@ -27,7 +27,7 @@
 
 #include <stdio.h>
 
-#define N 512
+// #define N 512
 
 /* Here is a single-function version of partition, the workhorse
  * function of quicksort.  This, or something very similar, is
@@ -206,9 +206,14 @@ int main(int argc, char *argv[])
    * If control reaches the end of the file, the program will exit,     *
    * which you may think of as leaving main.                            */
 
-  int a[N];
+  // int a[N];
 
-  fill(a, N);
+  // fill(a, N);
+
+
+
+  int a[] = {8, 3, 1, 7, 5, 2, 9};  // Example of hardcoded array
+  int N = sizeof(a) / sizeof(a[0]); 
 
   /*
   int i;
